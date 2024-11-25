@@ -1,5 +1,5 @@
 FROM node:alpine AS base
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 
 
@@ -18,8 +18,9 @@ RUN npm run build
 
 FROM nginxinc/nginx-unprivileged AS start
 WORKDIR /usr/share/nginx/html
-COPY dist .
+COPY --from=builder /app/dist .
 ENV PORT=8080
 USER nginx
 EXPOSE 8080
+HEALTHCHECK CMD curl -f / || exit 1
 CMD ["nginx", "-g", "daemon off;"]
